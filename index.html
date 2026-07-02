@@ -742,3 +742,298 @@
             { emoji: '🤝', name: 'Social Work', cards: 24 },
             { emoji: '🤝', name: 'Soft Skills', cards: 24 },
             { emoji: '🖥️', name: 'Software Engineer', cards: 24 },
+            { emoji: '⚽', name: 'Sports', cards: 24 },
+            { emoji: '⭐', name: 'STAR Method', cards: 24 },
+            { emoji: '🚀', name: 'Start-ups', cards: 24 },
+            { emoji: '🧠', name: 'Study Strategies', cards: 24 },
+            { emoji: '📚', name: 'Study Tips', cards: 24 },
+            { emoji: '🏊', name: 'Swimming', cards: 24 },
+            { emoji: '🛡️', name: 'Swiss Cheese Model', cards: 25 },
+            { emoji: '⚙️', name: 'Systems', cards: 24 },
+            { emoji: '💉', name: 'Tattoo Basics', cards: 24 },
+            { emoji: '🎭', name: 'Tattoo Styles', cards: 24 },
+            { emoji: '🖋️', name: 'Tattoos & Body Art', cards: 24 },
+            { emoji: '📑', name: 'Taxation', cards: 24 },
+            { emoji: '💻', name: 'Tech', cards: 24 },
+            { emoji: '🔒', name: 'Tech, Legal & Unit Econ', cards: 24 },
+            { emoji: '⭐', name: 'Testimonials', cards: 24 },
+            { emoji: '🌍', name: 'The Environment', cards: 24 },
+            { emoji: '🕊️', name: 'The Inner Journey', cards: 24 },
+            { emoji: '⏰', name: 'Time', cards: 24 },
+            { emoji: '⏰', name: 'Time Management', cards: 24 },
+            { emoji: '🔧', name: 'Tools & Safety Gear', cards: 24 },
+            { emoji: '✈️', name: 'Tourism', cards: 24 },
+            { emoji: '📈', name: 'Track Record Vocabulary', cards: 24 },
+            { emoji: '🔄', name: 'Transitions & Connectors', cards: 24 },
+            { emoji: '🚆', name: 'Transportation', cards: 24 },
+            { emoji: '✈️', name: 'Travel & Tech', cards: 24 },
+            { emoji: '✈️', name: 'Traveling', cards: 24 },
+            { emoji: '🎓', name: 'University Onboarding', cards: 24 },
+            { emoji: '🏙️', name: 'Urban Planning', cards: 24 },
+            { emoji: '⚡', name: 'Verbs & Tenses (Part 1)', cards: 24 },
+            { emoji: '🔄', name: 'Verbs & Tenses (Part 2)', cards: 24 },
+            { emoji: '🖼️', name: 'Visual Arts', cards: 24 },
+            { emoji: '🤲', name: 'Volunteering', cards: 24 },
+            { emoji: '📈', name: 'Wall Street Investing', cards: 24 },
+            { emoji: '⚔️', name: 'War', cards: 24 },
+            { emoji: '⚔️', name: 'War Strategy', cards: 24 },
+            { emoji: '☀️', name: 'Weather & Climate', cards: 24 },
+            { emoji: '💼', name: 'Work & Study', cards: 24 },
+            { emoji: '💼', name: 'Working', cards: 24 },
+            { emoji: '✈️', name: 'Working Holiday', cards: 24 },
+            { emoji: '✈️', name: 'Working Holiday Visa', cards: 24 },
+            { emoji: '🏢', name: 'Workplace Phrases', cards: 24 },
+            { emoji: '🔨', name: 'Workshops', cards: 24 },
+            { emoji: '✍️', name: 'Writing', cards: 24 }
+        ];
+
+        function generateCardsForTopic(topicName, count) {
+            const cards = [];
+            const words = [
+                { word: 'Resilience', pos: 'n.', pronunciation: '/rɪˈzɪliəns/',
+                    definition: 'The capacity to recover quickly from difficulties; toughness.',
+                    example: 'Her resilience in the face of repeated setbacks inspired the entire team.' },
+                { word: 'Perseverance', pos: 'n.', pronunciation: '/ˌpɜːrsəˈvɪərəns/',
+                    definition: 'Persistence in doing something despite difficulty or delay in achieving success.',
+                    example: 'Through perseverance, he finally mastered the language.' },
+                { word: 'Adaptability', pos: 'n.', pronunciation: '/əˌdæptəˈbɪləti/',
+                    definition: 'The quality of being able to adjust to new conditions.',
+                    example: 'Adaptability is key to thriving in a fast-changing workplace.' },
+                { word: 'Collaboration', pos: 'n.', pronunciation: '/kəˌlæbəˈreɪʃən/',
+                    definition: 'The action of working with someone to achieve something.',
+                    example: 'The project succeeded because of strong collaboration across teams.' },
+                { word: 'Innovation', pos: 'n.', pronunciation: '/ˌɪnəˈveɪʃən/',
+                    definition: 'The introduction of something new; a new idea, method, or device.',
+                    example: 'Innovation drives growth in every industry.' },
+                { word: 'Integrity', pos: 'n.', pronunciation: '/ɪnˈteɡrəti/',
+                    definition: 'The quality of being honest and having strong moral principles.',
+                    example: 'She is known for her integrity and fairness.' },
+                { word: 'Empathy', pos: 'n.', pronunciation: '/ˈempəθi/',
+                    definition: 'The ability to understand and share the feelings of another.',
+                    example: 'Empathy is essential for effective leadership.' },
+                { word: 'Accountability', pos: 'n.', pronunciation: '/əˌkaʊntəˈbɪləti/',
+                    definition: 'The fact or condition of being responsible for one\'s actions.',
+                    example: 'The team took accountability for the project\'s outcome.' },
+                { word: 'Mentorship', pos: 'n.', pronunciation: '/ˈmentɔːrʃɪp/',
+                    definition: 'The guidance provided by a mentor, especially in a professional setting.',
+                    example: 'Mentorship helped her navigate her career path.' },
+                { word: 'Diversity', pos: 'n.', pronunciation: '/daɪˈvɜːrsəti/',
+                    definition: 'The practice of including people from a range of different backgrounds.',
+                    example: 'The company is committed to promoting diversity and inclusion.' },
+            ];
+
+            for (let i = 0; i < count; i++) {
+                const base = words[i % words.length];
+                const suffix = ` (Card ${i + 1} of ${count})`;
+                cards.push({
+                    word: base.word,
+                    pos: base.pos,
+                    pronunciation: base.pronunciation,
+                    definition: base.definition,
+                    example: base.example.replace('.', '') + suffix + '.'
+                });
+            }
+            return cards;
+        }
+
+        let currentTopic = null;
+        let currentCards = [];
+        let currentIndex = 0;
+        let isRevealed = false;
+
+        const grid = document.getElementById('topicGrid');
+        const searchInput = document.getElementById('searchInput');
+        const statsDisplay = document.getElementById('statsDisplay');
+        const overlay = document.getElementById('flashcardOverlay');
+        const flashcardContent = document.getElementById('flashcardContent');
+        const closeBtn = document.getElementById('closeFlashcard');
+
+        function renderTopics(filter = '') {
+            const q = filter.toLowerCase().trim();
+            let filtered = TOPICS;
+            if (q) {
+                filtered = TOPICS.filter(t => t.name.toLowerCase().includes(q));
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                            <div class="no-results">
+                                <span>🔍</span>
+                                No topics match your search.
+                            </div>
+                        `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(topic => {
+                html += `
+                            <div class="topic-card" data-topic="${topic.name}">
+                                <span class="emoji">${topic.emoji}</span>
+                                <div class="info">
+                                    <span class="name">${topic.name}</span>
+                                    <span class="count">${topic.cards} cards</span>
+                                </div>
+                            </div>
+                        `;
+            });
+            grid.innerHTML = html;
+
+            document.querySelectorAll('.topic-card').forEach(el => {
+                el.addEventListener('click', function() {
+                    const name = this.dataset.topic;
+                    const topic = TOPICS.find(t => t.name === name);
+                    if (topic) openFlashcard(topic);
+                });
+            });
+        }
+
+        function openFlashcard(topic) {
+            currentTopic = topic;
+            currentCards = generateCardsForTopic(topic.name, topic.cards);
+            currentIndex = 0;
+            isRevealed = false;
+            overlay.classList.add('active');
+            renderCard();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderCard() {
+            if (!currentCards.length || currentIndex >= currentCards.length) {
+                flashcardContent.innerHTML = `
+                            <div class="deck-complete">
+                                <span class="big-icon">🍁</span>
+                                <h2>Deck Complete!</h2>
+                                <p>Excellent progress. You've finished <strong>${currentTopic ? currentTopic.name : ''}</strong>.</p>
+                                <div class="btn-group">
+                                    <button class="btn-outline" id="studyAgainBtn">Study Again</button>
+                                    <button class="btn-red" id="chooseAnotherBtn">Choose Another Topic</button>
+                                </div>
+                            </div>
+                        `;
+                document.getElementById('studyAgainBtn')?.addEventListener('click', () => {
+                    currentIndex = 0;
+                    isRevealed = false;
+                    renderCard();
+                });
+                document.getElementById('chooseAnotherBtn')?.addEventListener('click', closeFlashcard);
+                return;
+            }
+
+            const card = currentCards[currentIndex];
+            const total = currentCards.length;
+            const progress = ((currentIndex + 1) / total) * 100;
+
+            let definitionDisplay = isRevealed ? card.definition : 'Click "Reveal" to see the definition.';
+            let exampleDisplay = isRevealed ? card.example : '';
+
+            flashcardContent.innerHTML = `
+                        <div class="progress-wrap">
+                            <div class="progress-meta">
+                                <span>${currentTopic ? currentTopic.emoji : ''} ${currentTopic ? currentTopic.name : ''}</span>
+                                <span>${currentIndex + 1} of ${total}</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: ${progress}%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card-word">${card.word}</div>
+                        <span class="card-pos">${card.pos}</span>
+                        <div class="card-pronunciation">${card.pronunciation}</div>
+
+                        <div class="card-definition">${definitionDisplay}</div>
+                        ${exampleDisplay ? `<div class="card-example">${exampleDisplay}</div>` : ''}
+
+                        <div class="card-actions">
+                            <button class="btn btn-skip" id="skipBtn">← Skip</button>
+                            ${!isRevealed
+                                ? `<button class="btn btn-reveal" id="revealBtn">Reveal</button>`
+                                : `<button class="btn btn-reveal" id="nextBtn">Next →</button>`
+                            }
+                        </div>
+                    `;
+
+            document.getElementById('skipBtn')?.addEventListener('click', () => {
+                if (currentIndex < total - 1) {
+                    currentIndex++;
+                    isRevealed = false;
+                    renderCard();
+                } else {
+                    currentIndex = total;
+                    renderCard();
+                }
+            });
+
+            document.getElementById('revealBtn')?.addEventListener('click', () => {
+                isRevealed = true;
+                renderCard();
+            });
+
+            document.getElementById('nextBtn')?.addEventListener('click', () => {
+                if (currentIndex < total - 1) {
+                    currentIndex++;
+                    isRevealed = false;
+                    renderCard();
+                } else {
+                    currentIndex = total;
+                    renderCard();
+                }
+            });
+
+            const keyHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeFlashcard();
+                    document.removeEventListener('keydown', keyHandler);
+                    return;
+                }
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isRevealed) {
+                        document.getElementById('revealBtn')?.click();
+                    } else {
+                        document.getElementById('nextBtn')?.click();
+                    }
+                    return;
+                }
+                if (e.key === 'ArrowLeft') {
+                    document.getElementById('skipBtn')?.click();
+                }
+                if (e.key === 'ArrowRight') {
+                    if (isRevealed) {
+                        document.getElementById('nextBtn')?.click();
+                    } else {
+                        document.getElementById('revealBtn')?.click();
+                    }
+                }
+            };
+            document.addEventListener('keydown', keyHandler);
+            flashcardContent._keyHandler = keyHandler;
+        }
+
+        function closeFlashcard() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            if (flashcardContent._keyHandler) {
+                document.removeEventListener('keydown', flashcardContent._keyHandler);
+                delete flashcardContent._keyHandler;
+            }
+            renderTopics(searchInput.value);
+        }
+
+        closeBtn.addEventListener('click', closeFlashcard);
+
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) closeFlashcard();
+        });
+
+        searchInput.addEventListener('input', function() {
+            renderTopics(this.value);
+        });
+
+        renderTopics();
+        const totalCards = TOPICS.reduce((sum, t) => sum + t.cards, 0);
+        statsDisplay.textContent = `${TOPICS.length} topics · ${totalCards.toLocaleString()} cards`;
+    </script>
+</body>
+</html>
