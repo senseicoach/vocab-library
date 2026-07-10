@@ -219,7 +219,7 @@
     </div>
     <div class="card-face" id="card-back" style="display:none;margin-top:10px;">
       <div class="back-inner">
-        <div class="b-header"><span id="b-word" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span></div>
+        <div class="b-header"><span id="b-word" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="email-teacher-btn" title="Email my teacher about this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✉️</button></div>
         <div><div class="lbl" id="b-lbl">Definition</div><div class="def-text" id="b-def">Definition text.</div></div>
         <div><div class="lbl" id="b-lbl2">Example</div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
         <div id="review-mark-row" style="display:flex;gap:8px;margin-top:1rem;">
@@ -1086,6 +1086,27 @@ function restartDeck() {
 document.getElementById('reveal-btn').onclick = flipCard;
 document.getElementById('next-btn').onclick = nextCard;
 document.getElementById('prev-btn').onclick = prevCard;
+
+const TEACHER_EMAIL = 'globalpro.co.jp@gmail.com';
+
+function stripHtml(str) {
+  return str.replace(/<[^>]*>/g, '');
+}
+
+document.getElementById('email-teacher-btn').onclick = () => {
+  const card = workingCards[currentCard];
+  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
+  const subject = 'Question about: ' + deck.name + ' \u2013 ' + card.w;
+  const body = 'Hi,\n\nI have a question about this word from ' + deck.name + ':\n\n'
+    + 'Word: ' + card.w + '\n'
+    + 'Definition: ' + stripHtml(card.d) + '\n'
+    + 'Example: ' + stripHtml(card.s) + '\n\n'
+    + 'My question:\n\n';
+  const mailtoUrl = 'mailto:' + encodeURIComponent(TEACHER_EMAIL)
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(body);
+  window.location.href = mailtoUrl;
+};
 
 document.addEventListener('keydown', (e) => {
   if (document.getElementById('study-main').classList.contains('hidden')) return;
