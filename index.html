@@ -202,7 +202,7 @@
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
 
   <div id="study-view">
-    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div>
+    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><div style="display:flex;gap:6px;"><button id="typing-mode-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">⌨️ Typing Mode</button><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div></div>
     <div class="card-face" id="card-front">
       <div class="front-inner">
         <div class="f-accent" id="f-accent"></div>
@@ -215,13 +215,23 @@
         <div class="f-pronun" id="f-pronun">/pronunciation/</div>
         <div id="f-translation" style="font-size:.82rem;color:var(--maple-red);font-weight:500;margin-bottom:.5rem;min-height:1.1rem;"></div>
         <button class="reveal-btn" id="reveal-btn">Reveal</button>
+        <div id="typing-prompt" style="display:none;text-align:left;">
+          <div class="lbl" style="margin-bottom:6px;">What word matches this definition?</div>
+          <div id="typing-def-text" style="font-size:.95rem;color:var(--ink);margin-bottom:.9rem;line-height:1.4;">Definition text.</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:.6rem;">
+            <input id="typing-input" type="text" placeholder="Type your answer..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:.65rem .85rem;font-size:.95rem;font-family:'DM Sans',sans-serif;">
+            <button id="typing-hint-btn" title="Hear the word" style="background:none;border:1px solid var(--border);border-radius:50%;width:38px;height:38px;min-width:38px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">🔊</button>
+          </div>
+          <button id="typing-check-btn" class="reveal-btn" style="width:100%;">Check</button>
+          <div id="typing-feedback" style="margin-top:.6rem;font-size:.88rem;font-weight:600;min-height:1.2rem;"></div>
+        </div>
       </div>
     </div>
     <div class="card-face" id="card-back" style="display:none;margin-top:10px;">
       <div class="back-inner">
         <div class="b-header"><span id="b-word" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="email-teacher-btn" title="Email Ron Taylor about this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
         <div><div class="lbl" id="b-lbl">Definition</div><div class="def-text" id="b-def">Definition text.</div></div>
-        <div><div class="lbl" id="b-lbl2">Example</div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
+        <div><div class="lbl" id="b-lbl2" style="display:flex;align-items:center;gap:6px;">Example<button id="sentence-audio-btn" title="Listen to example sentence" style="background:none;border:1px solid var(--border);border-radius:50%;width:20px;height:20px;min-width:20px;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button></div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
         <div id="review-mark-row" style="display:flex;gap:8px;margin-top:1rem;">
           <button id="mark-learning-btn" style="flex:1;background:#fff;border:1.5px solid var(--maple-red);color:var(--maple-red);border-radius:10px;padding:.6rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">🔁 Still Learning</button>
           <button id="mark-known-btn" style="flex:1;background:#fff;border:1.5px solid #2e7d32;color:#2e7d32;border-radius:10px;padding:.6rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Got It</button>
@@ -842,11 +852,29 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 /* ---------------- Study view ---------------- */
 let workingCards = [];
 let currentSpeakWord = '';
+let currentSpeakSentence = '';
 let activeHomeTab = 'topics';
 let activePathId = null;
 const LANG_KEY = 'canadianDream_lang_v1';
 let selectedLang = 'en';
 try { selectedLang = localStorage.getItem(LANG_KEY) || 'en'; } catch (e) {}
+
+const TYPING_MODE_KEY = 'canadianDream_typingMode_v1';
+let typingMode = false;
+try { typingMode = localStorage.getItem(TYPING_MODE_KEY) === 'true'; } catch (e) {}
+
+function levenshteinDistance(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
 
 function setLanguage(lang) {
   selectedLang = lang;
@@ -873,6 +901,16 @@ function speakCurrentWord() {
   if (!speechSupported || !currentSpeakWord) return;
   stopSpeaking();
   const cleanText = currentSpeakWord.replace(/\([^)]*\)/g, '').trim();
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'en-CA';
+  utterance.rate = 0.9;
+  try { window.speechSynthesis.speak(utterance); } catch (e) {}
+}
+
+function speakCurrentSentence() {
+  if (!speechSupported || !currentSpeakSentence) return;
+  stopSpeaking();
+  const cleanText = stripHtml(currentSpeakSentence).trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'en-CA';
   utterance.rate = 0.9;
@@ -991,6 +1029,10 @@ function showCard() {
   if (card.extra === 'invest') {
     document.getElementById('card-front').style.display = 'none';
     revealBtn.style.display = 'none';
+    document.getElementById('typing-prompt').style.display = 'none';
+    document.querySelector('.f-word-row').style.display = 'flex';
+    document.getElementById('f-pronun').style.display = 'block';
+    document.getElementById('f-translation').style.display = 'block';
     if (!investCard) {
       investCard = document.createElement('div');
       investCard.id = 'invest-card';
@@ -1012,6 +1054,7 @@ function showCard() {
   document.getElementById('b-word').textContent = card.w;
   document.getElementById('b-pos').textContent = card.pos || 'n.';
   currentSpeakWord = card.w;
+  currentSpeakSentence = card.s;
   stopSpeaking();
   document.getElementById('b-lbl').style.color = color;
   document.getElementById('b-lbl2').style.color = color;
@@ -1020,6 +1063,30 @@ function showCard() {
   document.getElementById('b-sent').innerHTML = '"' + card.s + '"';
   document.getElementById('next-btn').innerHTML = (currentCard + 1 === total) ? 'Complete →' : 'Skip →';
   updateMarkButtonsUI(deck.name, card.w);
+
+  const typingPrompt = document.getElementById('typing-prompt');
+  const wordRow = document.querySelector('.f-word-row');
+  const pronunEl = document.getElementById('f-pronun');
+  const translationEl = document.getElementById('f-translation');
+  const isTypeable = typingMode && !/ vs | vs\.|\(/.test(card.w);
+  if (isTypeable) {
+    wordRow.style.display = 'none';
+    pronunEl.style.display = 'none';
+    translationEl.style.display = 'none';
+    revealBtn.style.display = 'none';
+    typingPrompt.style.display = 'block';
+    document.getElementById('typing-def-text').textContent = card.d;
+    document.getElementById('typing-input').value = '';
+    document.getElementById('typing-feedback').textContent = '';
+    document.getElementById('typing-check-btn').style.background = color;
+    document.getElementById('typing-check-btn').style.display = 'inline-flex';
+    document.getElementById('typing-input').disabled = false;
+  } else {
+    wordRow.style.display = 'flex';
+    pronunEl.style.display = 'block';
+    translationEl.style.display = 'block';
+    typingPrompt.style.display = 'none';
+  }
 }
 
 function updateMarkButtonsUI(deckName, word) {
@@ -1154,9 +1221,59 @@ document.addEventListener('keydown', (e) => {
 });
 document.getElementById('restart-btn').onclick = restartDeck;
 document.getElementById('shuffle-btn').onclick = shuffleDeck;
+
+function updateTypingModeBtnUI() {
+  const btn = document.getElementById('typing-mode-btn');
+  btn.style.background = typingMode ? 'var(--maple-red)' : 'none';
+  btn.style.color = typingMode ? '#fff' : 'var(--ink)';
+  btn.style.borderColor = typingMode ? 'var(--maple-red)' : 'var(--border)';
+}
+updateTypingModeBtnUI();
+
+document.getElementById('typing-mode-btn').onclick = () => {
+  typingMode = !typingMode;
+  try { localStorage.setItem(TYPING_MODE_KEY, String(typingMode)); } catch (e) {}
+  updateTypingModeBtnUI();
+  showCard();
+};
+
+function checkTypedAnswer() {
+  const input = document.getElementById('typing-input');
+  const feedback = document.getElementById('typing-feedback');
+  const card = workingCards[currentCard];
+  const userAnswer = input.value.trim().toLowerCase();
+  if (!userAnswer) return;
+  const correctAnswer = card.w.replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+  const distance = levenshteinDistance(userAnswer, correctAnswer);
+  input.disabled = true;
+  document.getElementById('typing-check-btn').style.display = 'none';
+  if (userAnswer === correctAnswer) {
+    feedback.textContent = '✓ Correct!';
+    feedback.style.color = '#2e7d32';
+  } else if (distance <= 2 && correctAnswer.length > 3) {
+    feedback.textContent = '≈ Almost — check your spelling below.';
+    feedback.style.color = '#e65100';
+  } else {
+    feedback.textContent = '✗ Not quite — see the answer below.';
+    feedback.style.color = 'var(--maple-red)';
+  }
+  typingMode = false;
+  try { localStorage.setItem(TYPING_MODE_KEY, 'false'); } catch (e) {}
+  updateTypingModeBtnUI();
+  setTimeout(() => { flipCard(); }, 900);
+}
+document.getElementById('typing-check-btn').onclick = checkTypedAnswer;
+document.getElementById('typing-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); checkTypedAnswer(); }
+});
+document.getElementById('typing-hint-btn').onclick = speakCurrentWord;
+
 document.getElementById('audio-btn').onclick = speakCurrentWord;
+document.getElementById('sentence-audio-btn').onclick = speakCurrentSentence;
 if (!speechSupported) {
   document.getElementById('audio-btn').style.display = 'none';
+  document.getElementById('sentence-audio-btn').style.display = 'none';
+  document.getElementById('typing-hint-btn').style.display = 'none';
   const spacer = document.querySelector('.f-word-row span[aria-hidden="true"]');
   if (spacer) spacer.style.display = 'none';
 }
