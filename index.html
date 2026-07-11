@@ -202,7 +202,7 @@
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
 
   <div id="study-view">
-    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><div style="display:flex;gap:6px;"><button id="typing-mode-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">⌨️ Typing Mode</button><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div></div>
+    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div>
     <div class="card-face" id="card-front">
       <div class="front-inner">
         <div class="f-accent" id="f-accent"></div>
@@ -229,7 +229,7 @@
     </div>
     <div class="card-face" id="card-back" style="display:none;margin-top:10px;">
       <div class="back-inner">
-        <div class="b-header"><span id="b-word" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="email-teacher-btn" title="Email Ron Taylor about this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
+        <div class="b-header"><span id="b-word" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="test-me-btn" title="Test yourself — type this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">⌨️</button><button id="email-teacher-btn" title="Email Ron Taylor about this word" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
         <div><div class="lbl" id="b-lbl">Definition</div><div class="def-text" id="b-def">Definition text.</div></div>
         <div><div class="lbl" id="b-lbl2" style="display:flex;align-items:center;gap:6px;">Example<button id="sentence-audio-btn" title="Listen to example sentence" style="background:none;border:1px solid var(--border);border-radius:50%;width:20px;height:20px;min-width:20px;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button></div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
         <div id="review-mark-row" style="display:flex;gap:8px;margin-top:1rem;">
@@ -859,9 +859,7 @@ const LANG_KEY = 'canadianDream_lang_v1';
 let selectedLang = 'en';
 try { selectedLang = localStorage.getItem(LANG_KEY) || 'en'; } catch (e) {}
 
-const TYPING_MODE_KEY = 'canadianDream_typingMode_v1';
 let typingMode = false;
-try { typingMode = localStorage.getItem(TYPING_MODE_KEY) === 'true'; } catch (e) {}
 
 function levenshteinDistance(a, b) {
   const m = a.length, n = b.length;
@@ -1082,6 +1080,7 @@ function showCard() {
     document.getElementById('typing-check-btn').style.display = 'inline-flex';
     document.getElementById('typing-input').disabled = false;
   } else {
+    typingMode = false;
     wordRow.style.display = 'flex';
     pronunEl.style.display = 'block';
     translationEl.style.display = 'block';
@@ -1222,18 +1221,8 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('restart-btn').onclick = restartDeck;
 document.getElementById('shuffle-btn').onclick = shuffleDeck;
 
-function updateTypingModeBtnUI() {
-  const btn = document.getElementById('typing-mode-btn');
-  btn.style.background = typingMode ? 'var(--maple-red)' : 'none';
-  btn.style.color = typingMode ? '#fff' : 'var(--ink)';
-  btn.style.borderColor = typingMode ? 'var(--maple-red)' : 'var(--border)';
-}
-updateTypingModeBtnUI();
-
-document.getElementById('typing-mode-btn').onclick = () => {
-  typingMode = !typingMode;
-  try { localStorage.setItem(TYPING_MODE_KEY, String(typingMode)); } catch (e) {}
-  updateTypingModeBtnUI();
+document.getElementById('test-me-btn').onclick = () => {
+  typingMode = true;
   showCard();
 };
 
@@ -1258,8 +1247,6 @@ function checkTypedAnswer() {
     feedback.style.color = 'var(--maple-red)';
   }
   typingMode = false;
-  try { localStorage.setItem(TYPING_MODE_KEY, 'false'); } catch (e) {}
-  updateTypingModeBtnUI();
   setTimeout(() => { flipCard(); }, 900);
 }
 document.getElementById('typing-check-btn').onclick = checkTypedAnswer;
