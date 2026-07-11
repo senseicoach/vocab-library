@@ -821,6 +821,7 @@ function startReviewSession() {
   reviewMode = true;
   currentCard = 0;
   isFlipped = false;
+  typingMode = false;
   workingCards = reviewQueue.map(item => item.card);
   document.querySelector('.search-wrap').classList.add('hidden');
   document.getElementById('home-view').classList.add('hidden');
@@ -919,6 +920,7 @@ function openDeck(index) {
   currentDeckIndex = index;
   currentCard = 0;
   isFlipped = false;
+  typingMode = false;
   reviewMode = false;
   reviewQueue = [];
   document.getElementById('home-view').classList.add('hidden');
@@ -948,6 +950,7 @@ function shuffleDeck() {
   workingCards = investCard ? shuffleable.concat([investCard]) : shuffleable;
   currentCard = 0;
   isFlipped = false;
+  typingMode = false;
   showCard();
 }
 
@@ -1141,11 +1144,15 @@ function flipCard() {
 }
 
 function nextCard() {
+  typingMode = false;
   if (currentCard + 1 < workingCards.length) { currentCard++; showCard(); }
   else showDone();
 }
 
-function prevCard() { if (currentCard > 0) { currentCard--; showCard(); } }
+function prevCard() {
+  typingMode = false;
+  if (currentCard > 0) { currentCard--; showCard(); }
+}
 
 function showDone() {
   document.getElementById('study-view').classList.add('hidden');
@@ -1169,7 +1176,7 @@ function showDone() {
 }
 
 function restartDeck() {
-  currentCard = 0; isFlipped = false;
+  currentCard = 0; isFlipped = false; typingMode = false;
   document.getElementById('study-view').classList.remove('hidden');
   document.getElementById('done-view').classList.add('hidden');
   showCard();
