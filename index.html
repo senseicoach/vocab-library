@@ -270,8 +270,35 @@
     <div class="done-title" id="done-title">Deck Complete!</div>
     <div class="done-sub" id="done-sub">Excellent progress.</div>
     <div style="font-size:.68rem;color:#c9c4bc;margin-top:-.75rem;margin-bottom:1.25rem;letter-spacing:.02em;">Ron Taylor · executiveclass.ca@gmail.com</div>
+    <button class="d-btn" id="test-yourself-btn">📝 Test Yourself on All Words</button>
     <button class="d-btn" id="restart-btn">Study Again</button>
     <button class="d-btn secondary" id="another-btn">Choose Another Subject</button>
+  </div>
+
+  <div id="test-view" class="hidden">
+    <div style="background:var(--card-white);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:1.6rem 1.5rem;max-width:600px;margin:0 auto;animation:card-in .4s cubic-bezier(.2,.8,.3,1);">
+      <div id="test-progress-label" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.6rem;">Testing · 1 of 23</div>
+      <div style="display:flex;align-items:flex-start;gap:.6rem;margin-bottom:1.1rem;">
+        <div id="test-def-text" style="flex:1;font-size:1.05rem;color:var(--text);line-height:1.45;">Definition text.</div>
+        <button id="test-hint-btn" title="Hear the word" aria-label="Hear the word" style="background:none;border:1px solid var(--border);border-radius:50%;width:38px;height:38px;min-width:38px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔊</button>
+      </div>
+      <input id="test-input" type="text" placeholder="Type the word..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:.65rem .85rem;font-size:.95rem;font-family:'DM Sans',sans-serif;">
+      <button id="test-check-btn" class="reveal-btn" style="width:100%;justify-content:center;">Check</button>
+      <div id="test-feedback" style="margin-top:.6rem;font-size:.88rem;font-weight:600;min-height:1.2rem;"></div>
+      <div style="text-align:center;margin-top:.9rem;">
+        <button id="test-skip-btn" style="background:none;border:none;color:var(--muted);font-size:.78rem;text-decoration:underline;cursor:pointer;padding:.2rem;">Skip test, mark deck complete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="test-results-view" class="hidden">
+    <div class="done">
+      <div class="done-icon">📝</div>
+      <div class="done-title" id="test-results-title">Test Complete!</div>
+      <div class="done-sub" id="test-results-sub">You got X of Y correct.</div>
+      <button class="d-btn" id="retry-missed-btn">Retry Missed Words</button>
+      <button class="d-btn secondary" id="test-done-btn">Complete Deck →</button>
+    </div>
   </div>
 </div>
 
@@ -859,6 +886,8 @@ function startReviewSession() {
   document.getElementById('study-main').classList.remove('hidden');
   document.getElementById('study-view').classList.remove('hidden');
   document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
   showCard();
   window.scrollTo({top:0});
 }
@@ -958,6 +987,8 @@ function openDeck(index, startCard) {
   document.getElementById('study-main').classList.remove('hidden');
   document.getElementById('study-view').classList.remove('hidden');
   document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
   const deck = DECKS[index];
   workingCards = deck.cards.slice();
   currentCard = (typeof startCard === 'number' && startCard > 0) ? Math.min(startCard, workingCards.length - 1) : 0;
@@ -988,6 +1019,8 @@ function shuffleDeck() {
 function closeDeck() {
   stopSpeaking();
   document.getElementById('study-main').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
   document.getElementById('home-view').classList.remove('hidden');
   currentDeckIndex = null;
   reviewMode = false;
@@ -1075,7 +1108,7 @@ function showCard() {
     }
     investCard.style.display = 'flex';
     investCard.innerHTML = '<div class="invest-maple">' + iconDisplay(deck.icon) + '</div><div class="invest-title">' + card.w + '</div><div class="invest-line"></div>';
-    document.getElementById('next-btn').innerHTML = (currentCard + 1 === total) ? 'Complete →' : 'Next →';
+    document.getElementById('next-btn').innerHTML = nextBtnLabel(deck, currentCard + 1 === total);
     document.getElementById('review-mark-row').style.display = 'none';
     return;
   }
@@ -1095,7 +1128,7 @@ function showCard() {
   document.getElementById('b-def').textContent = card.d;
   document.getElementById('b-sent').style.borderColor = color;
   document.getElementById('b-sent').innerHTML = '"' + card.s + '"';
-  document.getElementById('next-btn').innerHTML = (currentCard + 1 === total) ? 'Complete →' : 'Skip →';
+  document.getElementById('next-btn').innerHTML = nextBtnLabel(deck, currentCard + 1 === total);
   updateMarkButtonsUI(deck.name, card.w);
 
   const typingPrompt = document.getElementById('typing-prompt');
@@ -1156,6 +1189,7 @@ function flipCard() {
   const front = document.getElementById('card-front');
   const back = document.getElementById('card-back');
   const total = workingCards.length;
+  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
 
   front.style.transition = 'transform .22s ease, opacity .22s ease';
   front.style.transform = 'rotateY(90deg)';
@@ -1173,13 +1207,14 @@ function flipCard() {
     back.style.opacity = '1';
   }, 220);
 
-  document.getElementById('next-btn').innerHTML = (currentCard + 1 === total) ? 'Complete →' : 'Next →';
+  document.getElementById('next-btn').innerHTML = nextBtnLabel(deck, currentCard + 1 === total);
 }
 
 function nextCard() {
   typingMode = false;
   if (currentCard + 1 < workingCards.length) { currentCard++; showCard(); }
-  else showDone();
+  else if (!reviewMode && getTestableCount(DECKS[currentDeckIndex]) > 0) { startDeckTest(); }
+  else { showDone(); }
 }
 
 function prevCard() {
@@ -1194,9 +1229,13 @@ function showDone() {
   if (reviewMode) {
     document.getElementById('done-title').textContent = 'Review Complete!';
     document.getElementById('done-sub').textContent = 'You reviewed ' + workingCards.length + ' card' + (workingCards.length === 1 ? '' : 's') + ' from across your library. Nicely done.';
+    document.getElementById('test-yourself-btn').style.display = 'none';
     return;
   }
+  document.getElementById('test-yourself-btn').style.display = 'inline-block';
   const deck = DECKS[currentDeckIndex];
+  const testableCount = deck.cards.filter(c => c.extra !== 'invest' && !/ vs | vs\.|\(/.test(c.w)).length;
+  if (testableCount === 0) document.getElementById('test-yourself-btn').style.display = 'none';
   document.getElementById('done-title').textContent = deck.name + ' — Complete!';
   document.getElementById('done-sub').textContent = 'You reviewed all ' + workingCards.length + ' cards. Excellent work!';
   const wasAlreadyComplete = isDeckComplete(deck.name);
@@ -1212,6 +1251,8 @@ function restartDeck() {
   currentCard = 0; isFlipped = false; typingMode = false;
   document.getElementById('study-view').classList.remove('hidden');
   document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
   showCard();
 }
 
@@ -1319,6 +1360,122 @@ document.getElementById('typing-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); checkTypedAnswer(); }
 });
 document.getElementById('typing-hint-btn').onclick = speakCurrentWord;
+
+/* ---------------- End-of-deck Test Yourself (all words, definition-only, retry missed) ---------------- */
+let testQueue = [];
+let testWrong = [];
+let testRoundTotal = 0;
+let testIndex = 0;
+
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getTestableCount(deck) {
+  return deck.cards.filter(c => c.extra !== 'invest' && !/ vs | vs\.|\(/.test(c.w)).length;
+}
+
+function nextBtnLabel(deck, isLast) {
+  if (!isLast) return 'Skip →';
+  if (!reviewMode && getTestableCount(deck) > 0) return 'Test & Complete →';
+  return 'Complete →';
+}
+
+function startDeckTest() {
+  const deck = DECKS[currentDeckIndex];
+  const testable = deck.cards.filter(c => c.extra !== 'invest' && !/ vs | vs\.|\(/.test(c.w));
+  testQueue = shuffleArr(testable);
+  testWrong = [];
+  testRoundTotal = testQueue.length;
+  testIndex = 0;
+  document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('study-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('test-view').classList.remove('hidden');
+  showTestQuestion();
+}
+
+function showTestQuestion() {
+  const card = testQueue[testIndex];
+  const deck = DECKS[currentDeckIndex];
+  document.getElementById('test-progress-label').textContent = 'Testing · ' + (testIndex + 1) + ' of ' + testRoundTotal;
+  document.getElementById('test-def-text').textContent = card.d;
+  currentSpeakWord = card.w;
+  const input = document.getElementById('test-input');
+  input.value = '';
+  input.disabled = false;
+  document.getElementById('test-feedback').textContent = '';
+  document.getElementById('test-check-btn').style.display = 'inline-flex';
+  document.getElementById('test-check-btn').style.background = deck.color;
+  input.focus();
+}
+
+function checkTestAnswer() {
+  const input = document.getElementById('test-input');
+  const feedback = document.getElementById('test-feedback');
+  const card = testQueue[testIndex];
+  const userAnswer = input.value.trim().toLowerCase();
+  if (!userAnswer) return;
+  const correctAnswer = card.w.replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+  input.disabled = true;
+  document.getElementById('test-check-btn').style.display = 'none';
+  if (userAnswer === correctAnswer) {
+    feedback.textContent = '✓ Correct!';
+    feedback.style.color = '#2e7d32';
+  } else {
+    feedback.textContent = '✗ ' + card.w;
+    feedback.style.color = 'var(--maple-red)';
+    testWrong.push(card);
+  }
+  setTimeout(() => {
+    testIndex++;
+    if (testIndex < testQueue.length) {
+      showTestQuestion();
+    } else {
+      finishTestRound();
+    }
+  }, 1000);
+}
+
+function finishTestRound() {
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.remove('hidden');
+  const correct = testRoundTotal - testWrong.length;
+  document.getElementById('test-results-title').textContent = (testWrong.length === 0) ? 'Perfect Score!' : 'Test Complete!';
+  document.getElementById('test-results-sub').textContent = 'You got ' + correct + ' of ' + testRoundTotal + ' correct.' + (testWrong.length ? ' Retry the ones you missed below.' : ' Great work — you know this deck.');
+  document.getElementById('retry-missed-btn').style.display = testWrong.length ? 'inline-block' : 'none';
+}
+
+function retryMissedWords() {
+  testQueue = shuffleArr(testWrong);
+  testWrong = [];
+  testRoundTotal = testQueue.length;
+  testIndex = 0;
+  document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('test-view').classList.remove('hidden');
+  showTestQuestion();
+}
+
+document.getElementById('test-yourself-btn').onclick = startDeckTest;
+document.getElementById('test-hint-btn').onclick = speakCurrentWord;
+document.getElementById('test-skip-btn').onclick = () => {
+  document.getElementById('test-view').classList.add('hidden');
+  showDone();
+};
+document.getElementById('test-check-btn').onclick = checkTestAnswer;
+document.getElementById('test-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); checkTestAnswer(); }
+});
+document.getElementById('retry-missed-btn').onclick = retryMissedWords;
+document.getElementById('test-done-btn').onclick = () => {
+  document.getElementById('test-results-view').classList.add('hidden');
+  showDone();
+};
 
 document.getElementById('audio-btn').onclick = speakCurrentWord;
 document.getElementById('sentence-audio-btn').onclick = speakCurrentSentence;
