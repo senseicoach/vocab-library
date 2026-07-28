@@ -300,6 +300,17 @@
       <button class="d-btn secondary" id="test-done-btn">Complete Deck →</button>
     </div>
   </div>
+
+  <div id="invest-view" class="hidden" style="max-width:600px;margin:0 auto;">
+    <div class="invest-card">
+      <div class="invest-maple" id="invest-view-icon">🍁</div>
+      <div class="invest-title" id="invest-view-title">Invest in Your Success!</div>
+      <div class="invest-line"></div>
+    </div>
+    <div style="text-align:center;margin-top:1.2rem;">
+      <button class="d-btn" id="invest-continue-btn">Continue →</button>
+    </div>
+  </div>
 </div>
 
 <div id="progress-modal-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(28,43,36,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:1.2rem;">
@@ -888,6 +899,7 @@ function startReviewSession() {
   document.getElementById('done-view').classList.add('hidden');
   document.getElementById('test-view').classList.add('hidden');
   document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   showCard();
   window.scrollTo({top:0});
 }
@@ -989,8 +1001,9 @@ function openDeck(index, startCard) {
   document.getElementById('done-view').classList.add('hidden');
   document.getElementById('test-view').classList.add('hidden');
   document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   const deck = DECKS[index];
-  workingCards = deck.cards.slice();
+  workingCards = deck.cards.filter(c => c.extra !== 'invest');
   currentCard = (typeof startCard === 'number' && startCard > 0) ? Math.min(startCard, workingCards.length - 1) : 0;
   saveLastDeck(deck.name, currentCard);
   const iconParts = deck.icon.split('|');
@@ -1021,6 +1034,7 @@ function closeDeck() {
   document.getElementById('study-main').classList.add('hidden');
   document.getElementById('test-view').classList.add('hidden');
   document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   document.getElementById('home-view').classList.remove('hidden');
   currentDeckIndex = null;
   reviewMode = false;
@@ -1214,6 +1228,7 @@ function nextCard() {
   typingMode = false;
   if (currentCard + 1 < workingCards.length) { currentCard++; showCard(); }
   else if (!reviewMode && getTestableCount(DECKS[currentDeckIndex]) > 0) { startDeckTest(); }
+  else if (!reviewMode) { showInvestScreen(); }
   else { showDone(); }
 }
 
@@ -1224,6 +1239,7 @@ function prevCard() {
 
 function showDone() {
   document.getElementById('study-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   document.getElementById('done-view').classList.remove('hidden');
   document.getElementById('prog').style.width = '100%';
   if (reviewMode) {
@@ -1253,6 +1269,7 @@ function restartDeck() {
   document.getElementById('done-view').classList.add('hidden');
   document.getElementById('test-view').classList.add('hidden');
   document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   showCard();
 }
 
@@ -1386,6 +1403,18 @@ function nextBtnLabel(deck, isLast) {
   return 'Complete →';
 }
 
+function showInvestScreen() {
+  document.getElementById('study-view').classList.add('hidden');
+  document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
+  const deck = DECKS[currentDeckIndex];
+  const investCard = deck.cards.find(c => c.extra === 'invest');
+  document.getElementById('invest-view-icon').textContent = iconDisplay(deck.icon);
+  document.getElementById('invest-view-title').textContent = investCard ? investCard.w : 'Invest in Your Success!';
+  document.getElementById('invest-view').classList.remove('hidden');
+}
+
 function startDeckTest() {
   const deck = DECKS[currentDeckIndex];
   const testable = deck.cards.filter(c => c.extra !== 'invest' && !/ vs | vs\.|\(/.test(c.w));
@@ -1396,6 +1425,7 @@ function startDeckTest() {
   document.getElementById('done-view').classList.add('hidden');
   document.getElementById('study-view').classList.add('hidden');
   document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
   document.getElementById('test-view').classList.remove('hidden');
   showTestQuestion();
 }
@@ -1465,6 +1495,10 @@ document.getElementById('test-yourself-btn').onclick = startDeckTest;
 document.getElementById('test-hint-btn').onclick = speakCurrentWord;
 document.getElementById('test-skip-btn').onclick = () => {
   document.getElementById('test-view').classList.add('hidden');
+  showInvestScreen();
+};
+document.getElementById('invest-continue-btn').onclick = () => {
+  document.getElementById('invest-view').classList.add('hidden');
   showDone();
 };
 document.getElementById('test-check-btn').onclick = checkTestAnswer;
@@ -1474,7 +1508,7 @@ document.getElementById('test-input').addEventListener('keydown', (e) => {
 document.getElementById('retry-missed-btn').onclick = retryMissedWords;
 document.getElementById('test-done-btn').onclick = () => {
   document.getElementById('test-results-view').classList.add('hidden');
-  showDone();
+  showInvestScreen();
 };
 
 document.getElementById('audio-btn').onclick = speakCurrentWord;
