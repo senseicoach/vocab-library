@@ -249,7 +249,7 @@
     </div>
     <div class="card-face" id="card-back" style="display:none;margin-top:10px;">
       <div class="back-inner">
-        <div class="b-header"><span id="b-word" style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="test-me-btn" title="Test yourself — type this word" aria-label="Test yourself by typing this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">⌨️</button><button id="email-teacher-btn" title="Email Ron Taylor about this word" aria-label="Email Ron Taylor about this word" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
+        <div class="b-header"><span id="b-word" style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="test-me-btn" title="Test yourself — type this word" aria-label="Test yourself by typing this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">⌨️</button><button id="email-teacher-btn" title="Email Ron Taylor about this word" aria-label="Email Ron Taylor about this word" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
         <div><div class="lbl" id="b-lbl">Definition</div><div class="def-text" id="b-def">Definition text.</div></div>
         <div><div class="lbl" id="b-lbl2" style="display:flex;align-items:center;gap:6px;">Example<button id="sentence-audio-btn" title="Listen to example sentence" aria-label="Listen to example sentence" style="background:none;border:1px solid var(--border);border-radius:50%;width:20px;height:20px;min-width:20px;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button></div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
         <div id="review-mark-row" style="display:flex;gap:8px;margin-top:1rem;">
@@ -1221,26 +1221,6 @@ function iconDisplay(icon) { return icon.replace('|', ''); }
 
 document.getElementById('prev-btn').onclick = prevCard;
 
-/* ---------------- Keyboard shortcuts (Space=flip, ←/→=navigate, 1/2=mark) ---------------- */
-document.addEventListener('keydown', (e) => {
-  if (!document.getElementById('progress-modal-overlay').classList.contains('hidden')) return;
-  const tag = (e.target && e.target.tagName || '').toLowerCase();
-  if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
-  if (document.getElementById('study-view').classList.contains('hidden')) return;
-  if (typingMode) return;
-
-  if (e.key === ' ' || e.code === 'Space') {
-    if (!isFlipped) { e.preventDefault(); flipCard(); }
-    return;
-  }
-  if (e.key === 'ArrowRight') { e.preventDefault(); nextCard(); return; }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); return; }
-  if ((e.key === '1' || e.key === '2') && isFlipped && document.getElementById('review-mark-row').style.display !== 'none') {
-    e.preventDefault();
-    markCurrentCard(e.key === '1' ? 'learning' : 'known');
-  }
-});
-
 /* ---------------- Swipe gestures (mobile: swipe left/right to navigate) ---------------- */
 (function() {
   let touchStartX = 0, touchStartY = 0, touchActive = false;
@@ -1298,6 +1278,9 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault();
     prevCard();
+  } else if ((e.key === '1' || e.key === '2') && isFlipped && document.getElementById('review-mark-row').style.display !== 'none') {
+    e.preventDefault();
+    markCurrentCard(e.key === '1' ? 'learning' : 'known');
   }
 });
 document.getElementById('restart-btn').onclick = restartDeck;
