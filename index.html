@@ -582,31 +582,41 @@ function currentStreak() {
 /* ---------------- Last studied deck (continue where you left off) ---------------- */
 const LAST_DECK_KEY = 'canadianDream_lastDeck_v1';
 
-function saveLastDeck(deckName) {
-  try { localStorage.setItem(LAST_DECK_KEY, deckName); } catch (e) {}
+function saveLastDeck(deckName, cardIndex) {
+  try { localStorage.setItem(LAST_DECK_KEY, JSON.stringify({ name: deckName, cardIndex: cardIndex || 0 })); } catch (e) {}
 }
 
 function getLastDeck() {
   try {
-    const name = localStorage.getItem(LAST_DECK_KEY);
-    if (!name) return null;
+    const raw = localStorage.getItem(LAST_DECK_KEY);
+    if (!raw) return null;
+    let name, cardIndex = 0;
+    try {
+      const parsed = JSON.parse(raw);
+      name = parsed.name;
+      cardIndex = parsed.cardIndex || 0;
+    } catch (e) {
+      name = raw; // legacy format: plain deck name string, no saved position
+    }
     const found = DECKS.find(d => d.name === name);
-    return found || null;
+    if (!found) return null;
+    return { deck: found, cardIndex: Math.max(0, Math.min(cardIndex, found.cards.length - 1)) };
   } catch (e) { return null; }
 }
 
 function renderContinueBanner() {
   const container = document.getElementById('continue-banner');
-  const lastDeck = getLastDeck();
-  if (!lastDeck || isDeckComplete(lastDeck.name)) { container.innerHTML = ''; return; }
+  const last = getLastDeck();
+  if (!last || isDeckComplete(last.deck.name)) { container.innerHTML = ''; return; }
+  const lastDeck = last.deck;
   container.innerHTML =
     '<button id="continue-btn" style="width:100%;text-align:left;background:var(--card-white);border:1px solid var(--border);border-radius:12px;padding:.85rem 1.1rem;cursor:pointer;display:flex;align-items:center;gap:.75rem;box-shadow:var(--shadow-sm);font-family:\'DM Sans\',sans-serif;">' +
       '<span style="font-size:1.4rem;">' + iconDisplay(lastDeck.icon) + '</span>' +
-      '<span style="flex:1;"><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Resume</div>' +
+      '<span style="flex:1;"><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Resume · Card ' + (last.cardIndex + 1) + ' of ' + lastDeck.cards.length + '</div>' +
       '<div style="font-family:\'Playfair Display\',serif;font-weight:600;font-size:1rem;color:var(--text);">' + lastDeck.name + '</div></span>' +
       '<span style="color:var(--maple-red);font-weight:600;">→</span>' +
     '</button>';
-  document.getElementById('continue-btn').onclick = () => openDeck(DECKS.indexOf(lastDeck));
+  document.getElementById('continue-btn').onclick = () => openDeck(DECKS.indexOf(lastDeck), last.cardIndex);
 }
 
 function updateHeaderStats() {
@@ -935,9 +945,8 @@ function speakCurrentSentence() {
   try { window.speechSynthesis.speak(utterance); } catch (e) {}
 }
 
-function openDeck(index) {
+function openDeck(index, startCard) {
   currentDeckIndex = index;
-  currentCard = 0;
   isFlipped = false;
   typingMode = false;
   reviewMode = false;
@@ -949,7 +958,8 @@ function openDeck(index) {
   document.getElementById('done-view').classList.add('hidden');
   const deck = DECKS[index];
   workingCards = deck.cards.slice();
-  saveLastDeck(deck.name);
+  currentCard = (typeof startCard === 'number' && startCard > 0) ? Math.min(startCard, workingCards.length - 1) : 0;
+  saveLastDeck(deck.name, currentCard);
   const iconParts = deck.icon.split('|');
   document.getElementById('th-icon').textContent = iconParts[0];
   document.getElementById('th-icon-right').textContent = iconParts.length > 1 ? iconParts[1] : '';
@@ -1020,6 +1030,8 @@ function showCard() {
   const card = workingCards[currentCard];
   const color = deck.color;
   const total = workingCards.length;
+
+  if (!reviewMode && currentDeckIndex !== null) saveLastDeck(deck.name, currentCard);
 
   document.getElementById('card-back').style.display = 'none';
   document.getElementById('card-back').style.transform = '';
