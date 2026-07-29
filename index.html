@@ -202,6 +202,12 @@
     <button id="tab-review" class="view-tab-btn" style="flex:1;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🔁 Review</button>
   </div>
   <div id="continue-banner" style="margin-bottom:1rem;"></div>
+  <div id="status-filter-row" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+    <button class="status-filter-btn" data-filter="all" style="background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:20px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">All</button>
+    <button class="status-filter-btn" data-filter="not-started" style="background:var(--card-white);color:var(--text);border:1px solid var(--border);border-radius:20px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Not Started</button>
+    <button class="status-filter-btn" data-filter="in-progress" style="background:var(--card-white);color:var(--text);border:1px solid var(--border);border-radius:20px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">In Progress</button>
+    <button class="status-filter-btn" data-filter="completed" style="background:var(--card-white);color:var(--text);border:1px solid var(--border);border-radius:20px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Completed</button>
+  </div>
   <div class="grid" id="topic-grid"></div>
   <div class="empty-state hidden" id="empty-state">
     <div class="e-icon">🍁</div>
@@ -269,10 +275,9 @@
     <div class="done-icon">🍁</div>
     <div class="done-title" id="done-title">Deck Complete!</div>
     <div class="done-sub" id="done-sub">Excellent progress.</div>
-    <div style="font-size:.68rem;color:#c9c4bc;margin-top:-.75rem;margin-bottom:1.25rem;letter-spacing:.02em;">Ron Taylor · executiveclass.ca@gmail.com</div>
-    <button class="d-btn" id="test-yourself-btn">📝 Test Yourself on All Words</button>
+    <button class="d-btn" id="test-yourself-btn">📝 Test Yourself Again</button>
     <button class="d-btn" id="restart-btn">Study Again</button>
-    <button class="d-btn secondary" id="another-btn">Choose Another Subject</button>
+    <button class="d-btn" id="another-btn">Choose Another Subject</button>
   </div>
 
   <div id="test-view" class="hidden">
@@ -320,7 +325,12 @@
       <button id="progress-modal-close" aria-label="Close" style="background:none;border:none;font-size:1.3rem;color:var(--muted);cursor:pointer;line-height:1;">×</button>
     </div>
     <div id="progress-modal-body" style="padding:1.2rem 1.4rem;overflow-y:auto;flex:1;"></div>
-    <div style="padding:1rem 1.4rem;border-top:1px solid var(--border);">
+    <div style="padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.55rem;">
+      <div style="display:flex;gap:.55rem;">
+        <button id="export-progress-btn" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:.65rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">⬇ Export Progress</button>
+        <button id="import-progress-btn" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:.65rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">⬆ Import Progress</button>
+      </div>
+      <input type="file" id="import-progress-file" accept="application/json" style="display:none;">
       <button id="reset-progress-btn" style="width:100%;background:none;border:1.5px solid var(--maple-red);color:var(--maple-red);border-radius:10px;padding:.65rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Reset my progress</button>
     </div>
   </div>
@@ -680,9 +690,30 @@ let currentDeckIndex = null, currentCard = 0, isFlipped = false;
 let reviewMode = false, reviewQueue = [];
 let filteredDecks = DECKS;
 let lastSearchQuery = '';
+let statusFilter = 'all';
+
+function getDeckStatus(deck) {
+  if (isDeckComplete(deck.name)) return 'completed';
+  const cardProgress = loadCardProgress();
+  const hasAny = deck.cards.some(c => c.extra !== 'invest' && cardProgress[cardKey(deck.name, c.w)]);
+  return hasAny ? 'in-progress' : 'not-started';
+}
+
+function applyFilters() {
+  const q = lastSearchQuery;
+  let base = !q ? DECKS : DECKS.filter(d => {
+    if (d.name.toLowerCase().includes(q)) return true;
+    return d.cards.some(c => (c.w || '').toLowerCase().includes(q) || (c.d || '').toLowerCase().includes(q));
+  });
+  if (statusFilter !== 'all') {
+    base = base.filter(d => getDeckStatus(d) === statusFilter);
+  }
+  filteredDecks = base;
+}
 
 /* ---------------- Home / Grid ---------------- */
 function renderGrid() {
+  applyFilters();
   const grid = document.getElementById('topic-grid');
   const empty = document.getElementById('empty-state');
   grid.innerHTML = '';
@@ -909,17 +940,21 @@ document.getElementById('tab-paths').onclick = () => showHomeTab('paths');
 document.getElementById('tab-review').onclick = () => showHomeTab('review');
 
 document.getElementById('search-input').addEventListener('input', (e) => {
-  const q = e.target.value.trim().toLowerCase();
-  lastSearchQuery = q;
-  if (!q) {
-    filteredDecks = DECKS;
-  } else {
-    filteredDecks = DECKS.filter(d => {
-      if (d.name.toLowerCase().includes(q)) return true;
-      return d.cards.some(c => (c.w || '').toLowerCase().includes(q) || (c.d || '').toLowerCase().includes(q));
-    });
-  }
+  lastSearchQuery = e.target.value.trim().toLowerCase();
   renderGrid();
+});
+
+document.querySelectorAll('.status-filter-btn').forEach(btn => {
+  btn.onclick = () => {
+    statusFilter = btn.getAttribute('data-filter');
+    document.querySelectorAll('.status-filter-btn').forEach(b => {
+      const active = b === btn;
+      b.style.background = active ? 'var(--ink)' : 'var(--card-white)';
+      b.style.color = active ? '#fff' : 'var(--text)';
+      b.style.borderColor = active ? 'var(--ink)' : 'var(--border)';
+    });
+    renderGrid();
+  };
 });
 
 /* ---------------- Study view ---------------- */
@@ -1604,10 +1639,72 @@ document.getElementById('progress-modal-overlay').onclick = (e) => {
   if (e.target.id === 'progress-modal-overlay') closeProgressModal();
 };
 
+document.getElementById('export-progress-btn').onclick = () => {
+  const payload = {
+    exportedFrom: 'The Canadian Dream — MASTERCLASS',
+    exportedAt: new Date().toISOString(),
+    progress: (() => { try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch (e) { return {}; } })(),
+    cardProgress: (() => { try { return JSON.parse(localStorage.getItem(CARD_PROGRESS_KEY) || '{}'); } catch (e) { return {}; } })(),
+    streak: (() => { try { return JSON.parse(localStorage.getItem(STREAK_KEY) || 'null'); } catch (e) { return null; } })()
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'canadian-dream-progress-' + dateStamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('import-progress-btn').onclick = () => {
+  document.getElementById('import-progress-file').click();
+};
+
+document.getElementById('import-progress-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || typeof data !== 'object' || (!data.progress && !data.cardProgress && !data.streak)) {
+        alert('That file doesn\'t look like a valid progress export.');
+        return;
+      }
+      const summary = 'This will REPLACE your current progress on this device with the imported file' +
+        (data.exportedAt ? ' (exported ' + new Date(data.exportedAt).toLocaleDateString() + ')' : '') +
+        '. This cannot be undone. Continue?';
+      if (!confirm(summary)) return;
+      try {
+        if (data.progress) localStorage.setItem(PROGRESS_KEY, JSON.stringify(data.progress));
+        if (data.cardProgress) localStorage.setItem(CARD_PROGRESS_KEY, JSON.stringify(data.cardProgress));
+        if (data.streak) localStorage.setItem(STREAK_KEY, JSON.stringify(data.streak));
+      } catch (err) {}
+      updateHeaderStats();
+      renderProgressModal();
+      if (activeHomeTab === 'paths') {
+        if (activePathId) { renderPathDetail(activePathId); } else { renderPathList(); }
+      } else {
+        renderGrid();
+        renderContinueBanner();
+      }
+      alert('Progress imported successfully.');
+    } catch (err) {
+      alert('Could not read that file — make sure it\'s a progress export from this app.');
+    }
+    document.getElementById('import-progress-file').value = '';
+  };
+  reader.readAsText(file);
+});
+
 document.getElementById('reset-progress-btn').onclick = () => {
-  if (confirm('Clear all your completed-topic progress, streak, and last-studied deck on this device? This cannot be undone.')) {
+  if (confirm('Clear all your completed-topic progress, review history, streak, and last-studied deck on this device? This cannot be undone.')) {
     try {
       localStorage.removeItem(PROGRESS_KEY);
+      localStorage.removeItem(CARD_PROGRESS_KEY);
       localStorage.removeItem(STREAK_KEY);
       localStorage.removeItem(LAST_DECK_KEY);
     } catch (e) {}
