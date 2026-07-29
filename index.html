@@ -327,6 +327,13 @@
     </div>
     <div id="progress-modal-body" style="padding:1.2rem 1.4rem;overflow-y:auto;flex:1;"></div>
     <div style="padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.55rem;">
+      <div style="display:flex;flex-direction:column;gap:.4rem;">
+        <label for="voice-select" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;">Pronunciation Voice</label>
+        <div style="display:flex;gap:.5rem;">
+          <select id="voice-select" style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:.6rem .7rem;font-size:.85rem;font-family:'DM Sans',sans-serif;background:var(--card-white);color:var(--text);"></select>
+          <button id="voice-test-btn" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:.6rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">▶ Test</button>
+        </div>
+      </div>
       <div style="display:flex;gap:.55rem;">
         <button id="export-progress-btn" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:.65rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">⬇ Export Progress</button>
         <button id="import-progress-btn" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--text);border-radius:10px;padding:.65rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">⬆ Import Progress</button>
@@ -1055,9 +1062,53 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
   btn.onclick = () => setLanguage(btn.getAttribute('data-lang'));
 });
 const speechSupported = typeof window.speechSynthesis !== 'undefined';
+const VOICE_KEY = 'canadianDream_voice_v1';
+let preferredVoice = null;
+
+function pickPreferredVoice() {
+  if (!speechSupported) return;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return;
+
+  const savedURI = (() => { try { return localStorage.getItem(VOICE_KEY); } catch (e) { return null; } })();
+  if (savedURI) {
+    const saved = voices.find(v => v.voiceURI === savedURI);
+    if (saved) { preferredVoice = saved; populateVoiceSelect(); return; }
+  }
+
+  const maleNameHints = ['daniel', 'alex', 'fred', 'tom', 'aaron', 'arthur', 'gordon', 'oliver', 'male', 'guy', 'ryan', 'eric', 'mark', 'james'];
+  const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  let match = enVoices.find(v => v.lang.toLowerCase() === 'en-ca' && maleNameHints.some(h => v.name.toLowerCase().includes(h)));
+  if (!match) match = enVoices.find(v => maleNameHints.some(h => v.name.toLowerCase().includes(h)));
+  if (!match) match = enVoices.find(v => v.lang.toLowerCase() === 'en-ca');
+  preferredVoice = match || null;
+  populateVoiceSelect();
+}
+
+function populateVoiceSelect() {
+  const select = document.getElementById('voice-select');
+  if (!select || !speechSupported) return;
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  if (voices.length === 0) return;
+  const currentURI = preferredVoice ? preferredVoice.voiceURI : null;
+  select.innerHTML = voices.map(v =>
+    '<option value="' + v.voiceURI.replace(/"/g, '&quot;') + '">' + v.name + ' (' + v.lang + ')</option>'
+  ).join('');
+  if (currentURI) select.value = currentURI;
+}
+
+if (speechSupported) {
+  pickPreferredVoice();
+  window.speechSynthesis.onvoiceschanged = pickPreferredVoice;
+}
 
 function stopSpeaking() {
   if (speechSupported) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+}
+
+function ensureVoiceApplied(utterance) {
+  if (!preferredVoice) pickPreferredVoice();
+  if (preferredVoice) { try { utterance.voice = preferredVoice; } catch (e) {} }
 }
 
 function speakCurrentWord() {
@@ -1066,6 +1117,7 @@ function speakCurrentWord() {
   const cleanText = currentSpeakWord.replace(/\([^)]*\)/g, '').trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'en-CA';
+  ensureVoiceApplied(utterance);
   utterance.rate = 0.9;
   try { window.speechSynthesis.speak(utterance); } catch (e) {}
 }
@@ -1076,6 +1128,7 @@ function speakCurrentSentence() {
   const cleanText = stripHtml(currentSpeakSentence).trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'en-CA';
+  ensureVoiceApplied(utterance);
   utterance.rate = 0.9;
   try { window.speechSynthesis.speak(utterance); } catch (e) {}
 }
@@ -1667,6 +1720,8 @@ let lastFocusedBeforeModal = null;
 function openProgressModal() {
   lastFocusedBeforeModal = document.activeElement;
   renderProgressModal();
+  pickPreferredVoice();
+  populateVoiceSelect();
   document.getElementById('progress-modal-overlay').classList.remove('hidden');
   document.getElementById('progress-modal-box').focus();
 }
@@ -1694,6 +1749,25 @@ document.getElementById('my-progress-btn').onclick = openProgressModal;
 document.getElementById('progress-modal-close').onclick = closeProgressModal;
 document.getElementById('progress-modal-overlay').onclick = (e) => {
   if (e.target.id === 'progress-modal-overlay') closeProgressModal();
+};
+
+document.getElementById('voice-select').addEventListener('change', (e) => {
+  const voices = window.speechSynthesis.getVoices();
+  const chosen = voices.find(v => v.voiceURI === e.target.value);
+  if (chosen) {
+    preferredVoice = chosen;
+    try { localStorage.setItem(VOICE_KEY, chosen.voiceURI); } catch (err) {}
+  }
+});
+
+document.getElementById('voice-test-btn').onclick = () => {
+  if (!speechSupported) return;
+  stopSpeaking();
+  const utterance = new SpeechSynthesisUtterance('This is how I will sound when I read your words aloud.');
+  utterance.lang = 'en-CA';
+  ensureVoiceApplied(utterance);
+  utterance.rate = 0.9;
+  try { window.speechSynthesis.speak(utterance); } catch (e) {}
 };
 
 document.getElementById('export-progress-btn').onclick = () => {
