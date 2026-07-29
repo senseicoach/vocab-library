@@ -343,7 +343,7 @@ const DECKS = JSON.parse(document.getElementById('decks-data').textContent);
 
 /* ---------------- Learning Paths (curated sequences through existing decks) ---------------- */
 const LEARNING_PATHS = [
-  {
+    {
     id: 'moving-to-canada',
     icon: '🇨🇦',
     title: 'Moving to Canada',
@@ -355,7 +355,7 @@ const LEARNING_PATHS = [
     icon: '💼',
     title: 'Getting Hired in Canada',
     description: 'From résumé to offer letter — the full job search sequence.',
-    decks: ['Cover Letter & Résumé', 'LinkedIn', 'LinkedIn Success', 'Networking', 'Interview Questions', 'Interviews', 'STAR Method', 'Negotiations', 'Onboarding', 'Probation Period', 'Working', 'Certification & Credentialing']
+    decks: ['Cover Letter & Résumé', 'LinkedIn', 'LinkedIn Success', 'Networking', 'Interview Questions', 'Interviews', 'STAR Method', 'Negotiations', 'Onboarding', 'Probation Period', 'Working', 'Certification & Credentialing', 'Reputation']
   },
   {
     id: 'becoming-a-manager',
@@ -384,6 +384,13 @@ const LEARNING_PATHS = [
     title: 'Workplace Communication',
     description: 'Meetings, email, and professional conversation, start to finish.',
     decks: ['Meeting Language', 'Presentations', 'Email Etiquette', 'Business Phrases', 'Professional Phrases', 'Corporate Communication', 'Diplomatic Phrases', 'Workplace Phrases']
+  },
+  {
+    id: 'c-suite',
+    icon: '👔',
+    title: 'C-Suite',
+    description: 'High-value executive and boardroom vocabulary for leaders, managers, and remote-first teams.',
+    decks: ['Boardroom Vocabulary', 'Executive Class', 'GlobalPro', 'C-Suite Vocabulary', 'Office & Remote Work Vocabulary']
   },
   {
     id: 'exam-prep',
@@ -475,13 +482,6 @@ const LEARNING_PATHS = [
     title: 'Common Mistakes for Taiwanese Speakers',
     description: 'The specific errors that come from Mandarin grammar carrying over into English.',
     decks: ['Taiwanese Learner Traps']
-  },
-  {
-    id: 'c-suite',
-    icon: '👔',
-    title: 'C-Suite',
-    description: 'High-value executive and boardroom vocabulary for leaders, managers, and remote-first teams.',
-    decks: ['Boardroom Vocabulary', 'Executive Class', 'GlobalPro', 'C-Suite Vocabulary', 'Office & Remote Work Vocabulary']
   }
 ];
 
