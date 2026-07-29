@@ -256,7 +256,7 @@
     </div>
     <div class="card-face" id="card-back" style="display:none;margin-top:10px;">
       <div class="back-inner">
-        <div class="b-header"><span id="b-word" style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="test-me-btn" title="Test yourself — type this word" aria-label="Test yourself by typing this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">⌨️</button><button id="email-teacher-btn" title="Email Ron Taylor about this word" aria-label="Email Ron Taylor about this word" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
+        <div class="b-header"><span id="b-word" style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;">Word</span><span id="b-pos" style="color:var(--muted);font-size:.85rem;">n.</span><button id="test-me-btn" title="Test yourself — type this word" aria-label="Test yourself by typing this word" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">⌨️</button><button id="email-teacher-btn" title="Email Ron Taylor about this lesson" aria-label="Email Ron Taylor about this lesson" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;min-width:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;filter:invert(.6) grayscale(1) brightness(1.3);">✉️</button></div>
         <div><div class="lbl" id="b-lbl">Definition</div><div class="def-text" id="b-def">Definition text.</div></div>
         <div><div class="lbl" id="b-lbl2" style="display:flex;align-items:center;gap:6px;">Example<button id="sentence-audio-btn" title="Listen to example sentence" aria-label="Listen to example sentence" style="background:none;border:1px solid var(--border);border-radius:50%;width:20px;height:20px;min-width:20px;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;padding:0;">🔊</button></div><div class="sent-box" id="b-sent">"Example sentence."</div></div>
         <div id="review-mark-row" style="display:flex;gap:8px;margin-top:1rem;">
@@ -1403,8 +1403,8 @@ document.getElementById('email-teacher-btn').onclick = () => {
   const card = workingCards[currentCard];
   const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
   const subject = 'Question about: ' + deck.name + ' \u2013 ' + card.w;
-  const body = 'Hi,\n\nI have a question about this word from ' + deck.name + ':\n\n'
-    + 'Word: ' + card.w + '\n'
+  const body = 'Hi,\n\nI have a question about this lesson from ' + deck.name + ':\n\n'
+    + 'Term: ' + card.w + '\n'
     + 'Definition: ' + stripHtml(card.d) + '\n'
     + 'Example: ' + stripHtml(card.s) + '\n\n'
     + 'My question:\n\n';
