@@ -1107,7 +1107,16 @@ function stopSpeaking() {
 }
 
 function ensureVoiceApplied(utterance) {
-  if (!preferredVoice) pickPreferredVoice();
+  if (speechSupported) {
+    const savedURI = (() => { try { return localStorage.getItem(VOICE_KEY); } catch (e) { return null; } })();
+    if (savedURI && (!preferredVoice || preferredVoice.voiceURI !== savedURI)) {
+      const voices = window.speechSynthesis.getVoices();
+      const saved = voices.find(v => v.voiceURI === savedURI);
+      if (saved) preferredVoice = saved;
+    } else if (!preferredVoice) {
+      pickPreferredVoice();
+    }
+  }
   if (preferredVoice) { try { utterance.voice = preferredVoice; } catch (e) {} }
 }
 
