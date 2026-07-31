@@ -196,10 +196,11 @@
 
 <!-- ===== HOME VIEW ===== -->
 <div class="main" id="home-view">
-  <div id="view-toggle" style="display:flex;gap:8px;margin-bottom:1rem;">
-    <button id="tab-topics" class="view-tab-btn" style="flex:1;background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">📚 Subjects</button>
-    <button id="tab-paths" class="view-tab-btn" style="flex:1;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🗺️ Learning Paths</button>
-    <button id="tab-review" class="view-tab-btn" style="flex:1;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🔁 Review</button>
+  <div id="view-toggle" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+    <button id="tab-topics" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">📚 Subjects</button>
+    <button id="tab-paths" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🗺️ Learning Paths</button>
+    <button id="tab-review" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🔁 Review</button>
+    <button id="tab-favorites" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">⭐ My Words</button>
   </div>
   <div id="wotd-card" style="margin-bottom:1rem;"></div>
   <div id="continue-banner" style="margin-bottom:1rem;"></div>
@@ -217,6 +218,7 @@
   <div id="path-list-view" class="hidden"></div>
   <div id="path-detail-view" class="hidden"></div>
   <div id="review-view" class="hidden"></div>
+  <div id="favorites-view" class="hidden"></div>
 </div>
 
 <!-- ===== STUDY VIEW ===== -->
@@ -229,7 +231,7 @@
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
 
   <div id="study-view">
-    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--sage-black);text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div>
+    <div class="deck-header"><div class="counter">Card <span id="cur">1</span> of <span id="tot">24</span></div><button id="favorite-btn" title="Add to My Words" aria-label="Add to My Words" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:.95rem;cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;">☆</button><button id="shuffle-btn" style="background:none;border:1px solid var(--border);border-radius:7px;padding:6px 14px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--sage-black);text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:6px;">🔀 Shuffle</button></div>
     <div class="card-face" id="card-front">
       <div class="front-inner">
         <div class="f-accent" id="f-accent"></div>
@@ -269,7 +271,7 @@
       <button class="n-btn" id="prev-btn">← Previous</button>
       <button class="n-btn" id="next-btn">Skip →</button>
     </div>
-    <div class="kbd-hint" style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:.6rem;">Space to flip · ← → to navigate · 1/2 to mark</div>
+    <div class="kbd-hint" style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:.6rem;">Space to flip · ← → to navigate · 1/2 to mark · S to star</div>
   </div>
 
   <div id="done-view" class="done hidden">
@@ -619,6 +621,58 @@ function getReviewStats(preloadedProgress) {
   return { learning: learning, known: known, due: due };
 }
 
+/* ---------------- Favorites (starred words — separate from spaced repetition) ---------------- */
+const FAVORITES_KEY = 'canadianDream_favorites_v1';
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+
+function saveFavorites(favorites) {
+  try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites)); } catch (e) {}
+}
+
+function isFavorite(deckName, word) {
+  const favorites = loadFavorites();
+  return !!favorites[cardKey(deckName, word)];
+}
+
+function toggleFavorite(deckName, word) {
+  const favorites = loadFavorites();
+  const key = cardKey(deckName, word);
+  let nowFavorited;
+  if (favorites[key]) {
+    delete favorites[key];
+    nowFavorited = false;
+  } else {
+    favorites[key] = { addedAt: Date.now() };
+    nowFavorited = true;
+  }
+  saveFavorites(favorites);
+  return nowFavorited;
+}
+
+function getFavoriteItems() {
+  const favorites = loadFavorites();
+  const items = [];
+  DECKS.forEach(deck => {
+    deck.cards.forEach(card => {
+      if (card.extra === 'invest') return;
+      const entry = favorites[cardKey(deck.name, card.w)];
+      if (entry) items.push({ deck: deck, card: card, addedAt: (entry && entry.addedAt) || 0 });
+    });
+  });
+  items.sort((a, b) => b.addedAt - a.addedAt);
+  return items;
+}
+
+function favoritesCount() {
+  return Object.keys(loadFavorites()).length;
+}
+
 /* ---------------- Streak tracking ---------------- */
 const STREAK_KEY = 'canadianDream_streak_v1';
 
@@ -758,8 +812,10 @@ function updateHeaderStats() {
   const done = completedCount();
   const streak = currentStreak();
   const parts = [];
+  const favCount = favoritesCount();
   if (done > 0) parts.push('<span style="color:var(--gold-accent)">' + done + ' completed</span>');
   if (streak > 0) parts.push('<span style="color:var(--gold-accent)">🔥 ' + streak + ' day streak</span>');
+  if (favCount > 0) parts.push('<span style="color:var(--gold-accent)">⭐ ' + favCount + ' word' + (favCount === 1 ? '' : 's') + '</span>');
   const statsEl = document.getElementById('header-stats');
   if (parts.length > 0) {
     statsEl.innerHTML = parts.join(' · ');
@@ -773,9 +829,16 @@ updateHeaderStats();
 
 let currentDeckIndex = null, currentCard = 0, isFlipped = false;
 let reviewMode = false, reviewQueue = [];
+let favMode = false, favQueue = [];
 let filteredDecks = DECKS;
 let lastSearchQuery = '';
 let statusFilter = 'all';
+
+function currentSessionDeck() {
+  if (reviewMode) return reviewQueue[currentCard].deck;
+  if (favMode) return favQueue[currentCard].deck;
+  return DECKS[currentDeckIndex];
+}
 
 function getDeckStatus(deck) {
   if (isDeckComplete(deck.name)) return 'completed';
@@ -844,13 +907,15 @@ function showHomeTab(tab) {
   const topicsBtn = document.getElementById('tab-topics');
   const pathsBtn = document.getElementById('tab-paths');
   const reviewBtn = document.getElementById('tab-review');
+  const favoritesBtn = document.getElementById('tab-favorites');
   const searchWrap = document.querySelector('.search-wrap');
   const active = 'background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
   const inactive = 'background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;opacity:.55;';
 
-  topicsBtn.style.cssText = 'flex:1;' + (tab === 'topics' ? active : inactive);
-  pathsBtn.style.cssText = 'flex:1;' + (tab === 'paths' ? active : inactive);
-  reviewBtn.style.cssText = 'flex:1;' + (tab === 'review' ? active : inactive);
+  topicsBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'topics' ? active : inactive);
+  pathsBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'paths' ? active : inactive);
+  reviewBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'review' ? active : inactive);
+  favoritesBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'favorites' ? active : inactive);
 
   searchWrap.classList.add('hidden');
   document.getElementById('continue-banner').classList.add('hidden');
@@ -859,6 +924,7 @@ function showHomeTab(tab) {
   document.getElementById('path-list-view').classList.add('hidden');
   document.getElementById('path-detail-view').classList.add('hidden');
   document.getElementById('review-view').classList.add('hidden');
+  document.getElementById('favorites-view').classList.add('hidden');
 
   if (tab === 'topics') {
     searchWrap.classList.remove('hidden');
@@ -872,6 +938,9 @@ function showHomeTab(tab) {
   } else if (tab === 'review') {
     document.getElementById('review-view').classList.remove('hidden');
     renderReviewView();
+  } else if (tab === 'favorites') {
+    document.getElementById('favorites-view').classList.remove('hidden');
+    renderFavoritesView();
   }
 }
 
@@ -1004,6 +1073,8 @@ function startReviewSession() {
   }
   reviewQueue = due;
   reviewMode = true;
+  favMode = false;
+  favQueue = [];
   currentCard = 0;
   isFlipped = false;
   typingMode = false;
@@ -1020,9 +1091,82 @@ function startReviewSession() {
   window.scrollTo({top:0});
 }
 
+function renderFavoritesView() {
+  const container = document.getElementById('favorites-view');
+  const items = getFavoriteItems();
+
+  let html = '<div style="font-family:\'Playfair Display\',serif;font-weight:700;font-size:1.15rem;color:var(--text);margin-bottom:.3rem;text-align:center;">My Words</div>' +
+    '<div style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem;text-align:center;">Star any word while studying to save it here — your own list, separate from the review queue.</div>';
+
+  if (items.length === 0) {
+    html += '<div style="background:var(--card-white);border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center;">' +
+      '<div style="font-size:1.8rem;margin-bottom:.5rem;">☆</div>' +
+      '<div style="font-size:.88rem;color:var(--text);">No starred words yet.</div>' +
+      '<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem;">Tap the ☆ button while studying any card to add it here.</div>' +
+      '</div>';
+    container.innerHTML = html;
+    return;
+  }
+
+  html += '<button id="start-favorites-btn" style="width:100%;background:var(--maple-red);color:#fff;border:none;border-radius:12px;padding:.9rem 1rem;font-size:.92rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;margin-bottom:1.2rem;">▶ Study My Words (' + items.length + ' word' + (items.length === 1 ? '' : 's') + ')</button>';
+
+  items.forEach(item => {
+    html += '<button class="favorite-item-btn" data-key="' + cardKey(item.deck.name, item.card.w) + '" style="display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:var(--card-white);border:1px solid var(--border);border-radius:12px;padding:.7rem .9rem;margin-bottom:.6rem;cursor:pointer;font-family:\'DM Sans\',sans-serif;">' +
+      '<span style="font-size:1.1rem;">' + iconDisplay(item.deck.icon) + '</span>' +
+      '<span style="flex:1;">' +
+        '<div style="font-weight:600;color:var(--text);font-size:.92rem;">' + item.card.w + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted);">' + item.deck.name + '</div>' +
+      '</span>' +
+      '<span class="favorite-remove-btn" data-key="' + cardKey(item.deck.name, item.card.w) + '" title="Remove from My Words" aria-label="Remove from My Words" style="color:var(--maple-red);font-size:1.1rem;padding:.2rem .4rem;">★</span>' +
+    '</button>';
+  });
+
+  container.innerHTML = html;
+  document.getElementById('start-favorites-btn').onclick = startFavoritesSession;
+
+  container.querySelectorAll('.favorite-remove-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const item = items.find(it => cardKey(it.deck.name, it.card.w) === btn.getAttribute('data-key'));
+      if (item) toggleFavorite(item.deck.name, item.card.w);
+      renderFavoritesView();
+    };
+  });
+  container.querySelectorAll('.favorite-item-btn').forEach(btn => {
+    btn.onclick = () => {
+      const item = items.find(it => cardKey(it.deck.name, it.card.w) === btn.getAttribute('data-key'));
+      if (item) startFavoritesSession(item);
+    };
+  });
+}
+
+function startFavoritesSession(startItem) {
+  const items = getFavoriteItems();
+  if (items.length === 0) return;
+  favQueue = items;
+  favMode = true;
+  reviewMode = false;
+  reviewQueue = [];
+  currentCard = startItem ? Math.max(0, favQueue.indexOf(startItem)) : 0;
+  isFlipped = false;
+  typingMode = false;
+  workingCards = favQueue.map(item => item.card);
+  document.querySelector('.search-wrap').classList.add('hidden');
+  document.getElementById('home-view').classList.add('hidden');
+  document.getElementById('study-main').classList.remove('hidden');
+  document.getElementById('study-view').classList.remove('hidden');
+  document.getElementById('done-view').classList.add('hidden');
+  document.getElementById('test-view').classList.add('hidden');
+  document.getElementById('test-results-view').classList.add('hidden');
+  document.getElementById('invest-view').classList.add('hidden');
+  showCard();
+  window.scrollTo({top:0});
+}
+
 document.getElementById('tab-topics').onclick = () => showHomeTab('topics');
 document.getElementById('tab-paths').onclick = () => showHomeTab('paths');
 document.getElementById('tab-review').onclick = () => showHomeTab('review');
+document.getElementById('tab-favorites').onclick = () => showHomeTab('favorites');
 
 document.getElementById('search-input').addEventListener('input', (e) => {
   lastSearchQuery = e.target.value.trim().toLowerCase();
@@ -1169,6 +1313,8 @@ function openDeck(index, startCard) {
   typingMode = false;
   reviewMode = false;
   reviewQueue = [];
+  favMode = false;
+  favQueue = [];
   document.getElementById('home-view').classList.add('hidden');
   document.querySelector('.search-wrap').classList.add('hidden');
   document.getElementById('study-main').classList.remove('hidden');
@@ -1190,14 +1336,26 @@ function openDeck(index, startCard) {
 }
 
 function shuffleDeck() {
-  const investIdx = workingCards.findIndex(c => c.extra === 'invest');
-  const shuffleable = investIdx >= 0 ? workingCards.slice(0, investIdx) : workingCards.slice();
-  const investCard = investIdx >= 0 ? workingCards[investIdx] : null;
-  for (let i = shuffleable.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffleable[i], shuffleable[j]] = [shuffleable[j], shuffleable[i]];
+  const queue = reviewMode ? reviewQueue : (favMode ? favQueue : null);
+  if (queue) {
+    // Shuffle the underlying {deck, card} queue itself so each card stays
+    // paired with its correct deck (workingCards must never be shuffled
+    // independently of reviewQueue/favQueue, or progress gets misattributed).
+    for (let i = queue.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [queue[i], queue[j]] = [queue[j], queue[i]];
+    }
+    workingCards = queue.map(item => item.card);
+  } else {
+    const investIdx = workingCards.findIndex(c => c.extra === 'invest');
+    const shuffleable = investIdx >= 0 ? workingCards.slice(0, investIdx) : workingCards.slice();
+    const investCard = investIdx >= 0 ? workingCards[investIdx] : null;
+    for (let i = shuffleable.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffleable[i], shuffleable[j]] = [shuffleable[j], shuffleable[i]];
+    }
+    workingCards = investCard ? shuffleable.concat([investCard]) : shuffleable;
   }
-  workingCards = investCard ? shuffleable.concat([investCard]) : shuffleable;
   currentCard = 0;
   isFlipped = false;
   typingMode = false;
@@ -1214,12 +1372,15 @@ function closeDeck() {
   currentDeckIndex = null;
   reviewMode = false;
   reviewQueue = [];
+  favMode = false;
+  favQueue = [];
   document.querySelector('.search-wrap').classList.add('hidden');
   document.getElementById('topic-grid').classList.add('hidden');
   document.getElementById('continue-banner').classList.add('hidden');
   document.getElementById('path-list-view').classList.add('hidden');
   document.getElementById('path-detail-view').classList.add('hidden');
   document.getElementById('review-view').classList.add('hidden');
+  document.getElementById('favorites-view').classList.add('hidden');
   if (activeHomeTab === 'paths') {
     if (activePathId) {
       document.getElementById('path-detail-view').classList.remove('hidden');
@@ -1231,6 +1392,9 @@ function closeDeck() {
   } else if (activeHomeTab === 'review') {
     document.getElementById('review-view').classList.remove('hidden');
     renderReviewView();
+  } else if (activeHomeTab === 'favorites') {
+    document.getElementById('favorites-view').classList.remove('hidden');
+    renderFavoritesView();
   } else {
     document.querySelector('.search-wrap').classList.remove('hidden');
     document.getElementById('topic-grid').classList.remove('hidden');
@@ -1250,12 +1414,12 @@ document.getElementById('study-paths-link').onclick = () => {
 };
 
 function showCard() {
-  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
+  const deck = currentSessionDeck();
   const card = workingCards[currentCard];
   const color = deck.color;
   const total = workingCards.length;
 
-  if (!reviewMode && currentDeckIndex !== null) saveLastDeck(deck.name, currentCard);
+  if (!reviewMode && !favMode && currentDeckIndex !== null) saveLastDeck(deck.name, currentCard);
 
   document.getElementById('card-back').style.display = 'none';
   document.getElementById('card-back').style.transform = '';
@@ -1299,9 +1463,12 @@ function showCard() {
     investCard.innerHTML = '<div class="invest-maple">' + iconDisplay(deck.icon) + '</div><div class="invest-title">' + card.w + '</div><div class="invest-line"></div>';
     document.getElementById('next-btn').innerHTML = nextBtnLabel(deck, currentCard + 1 === total);
     document.getElementById('review-mark-row').style.display = 'none';
+    document.getElementById('favorite-btn').style.display = 'none';
     return;
   }
   document.getElementById('review-mark-row').style.display = 'flex';
+  document.getElementById('favorite-btn').style.display = 'inline-flex';
+  updateFavoriteButtonUI(deck.name, card.w);
 
   document.getElementById('f-word').textContent = card.w;
   document.getElementById('f-pronun').textContent = card.p || '';
@@ -1359,7 +1526,7 @@ function updateMarkButtonsUI(deckName, word) {
 }
 
 function markCurrentCard(status) {
-  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
+  const deck = currentSessionDeck();
   const card = workingCards[currentCard];
   if (!card || card.extra === 'invest') return;
   markCardStatus(deck.name, card.w, status);
@@ -1368,6 +1535,26 @@ function markCurrentCard(status) {
 
 document.getElementById('mark-learning-btn').onclick = () => markCurrentCard('learning');
 document.getElementById('mark-known-btn').onclick = () => markCurrentCard('known');
+
+function updateFavoriteButtonUI(deckName, word) {
+  const btn = document.getElementById('favorite-btn');
+  const starred = isFavorite(deckName, word);
+  btn.textContent = starred ? '★' : '☆';
+  btn.title = starred ? 'Remove from My Words' : 'Add to My Words';
+  btn.setAttribute('aria-label', btn.title);
+  btn.style.color = starred ? 'var(--gold-accent)' : '';
+  btn.style.borderColor = starred ? 'var(--gold-accent)' : 'var(--border)';
+}
+
+function toggleCurrentFavorite() {
+  const deck = currentSessionDeck();
+  const card = workingCards[currentCard];
+  if (!card || card.extra === 'invest') return;
+  toggleFavorite(deck.name, card.w);
+  updateFavoriteButtonUI(deck.name, card.w);
+}
+
+document.getElementById('favorite-btn').onclick = toggleCurrentFavorite;
 
 
 function flipCard() {
@@ -1378,7 +1565,7 @@ function flipCard() {
   const front = document.getElementById('card-front');
   const back = document.getElementById('card-back');
   const total = workingCards.length;
-  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
+  const deck = currentSessionDeck();
 
   front.style.transition = 'transform .22s ease, opacity .22s ease';
   front.style.transform = 'rotateY(90deg)';
@@ -1402,8 +1589,8 @@ function flipCard() {
 function nextCard() {
   typingMode = false;
   if (currentCard + 1 < workingCards.length) { currentCard++; showCard(); }
-  else if (!reviewMode && getTestableCount(DECKS[currentDeckIndex]) > 0) { startDeckTest(); }
-  else if (!reviewMode) { showInvestScreen(); }
+  else if (!reviewMode && !favMode && getTestableCount(DECKS[currentDeckIndex]) > 0) { startDeckTest(); }
+  else if (!reviewMode && !favMode) { showInvestScreen(); }
   else { showDone(); }
 }
 
@@ -1420,6 +1607,12 @@ function showDone() {
   if (reviewMode) {
     document.getElementById('done-title').textContent = 'Review Complete!';
     document.getElementById('done-sub').textContent = 'You reviewed ' + workingCards.length + ' card' + (workingCards.length === 1 ? '' : 's') + ' from across your library. Nicely done.';
+    document.getElementById('test-yourself-btn').style.display = 'none';
+    return;
+  }
+  if (favMode) {
+    document.getElementById('done-title').textContent = 'My Words — Complete!';
+    document.getElementById('done-sub').textContent = 'You went through ' + workingCards.length + ' starred word' + (workingCards.length === 1 ? '' : 's') + '.';
     document.getElementById('test-yourself-btn').style.display = 'none';
     return;
   }
@@ -1484,7 +1677,7 @@ function stripHtml(str) {
 
 document.getElementById('email-teacher-btn').onclick = () => {
   const card = workingCards[currentCard];
-  const deck = reviewMode ? reviewQueue[currentCard].deck : DECKS[currentDeckIndex];
+  const deck = currentSessionDeck();
   const subject = 'Question about: ' + deck.name + ' \u2013 ' + card.w;
   const body = 'Hi,\n\nI have a question about this lesson from ' + deck.name + ':\n\n'
     + 'Term: ' + card.w + '\n'
@@ -1514,6 +1707,9 @@ document.addEventListener('keydown', (e) => {
   } else if ((e.key === '1' || e.key === '2') && isFlipped && document.getElementById('review-mark-row').style.display !== 'none') {
     e.preventDefault();
     markCurrentCard(e.key === '1' ? 'learning' : 'known');
+  } else if (e.key.toLowerCase() === 's' && document.getElementById('favorite-btn').style.display !== 'none') {
+    e.preventDefault();
+    toggleCurrentFavorite();
   }
 });
 document.getElementById('restart-btn').onclick = restartDeck;
@@ -1574,7 +1770,7 @@ function getTestableCount(deck) {
 
 function nextBtnLabel(deck, isLast) {
   if (!isLast) return 'Skip →';
-  if (!reviewMode && getTestableCount(deck) > 0) return 'Test & Complete →';
+  if (!reviewMode && !favMode && getTestableCount(deck) > 0) return 'Test & Complete →';
   return 'Complete →';
 }
 
@@ -1806,7 +2002,8 @@ document.getElementById('export-progress-btn').onclick = () => {
     exportedAt: new Date().toISOString(),
     progress: (() => { try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch (e) { return {}; } })(),
     cardProgress: (() => { try { return JSON.parse(localStorage.getItem(CARD_PROGRESS_KEY) || '{}'); } catch (e) { return {}; } })(),
-    streak: (() => { try { return JSON.parse(localStorage.getItem(STREAK_KEY) || 'null'); } catch (e) { return null; } })()
+    streak: (() => { try { return JSON.parse(localStorage.getItem(STREAK_KEY) || 'null'); } catch (e) { return null; } })(),
+    favorites: (() => { try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '{}'); } catch (e) { return {}; } })()
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1831,7 +2028,7 @@ document.getElementById('import-progress-file').addEventListener('change', (e) =
   reader.onload = () => {
     try {
       const data = JSON.parse(reader.result);
-      if (!data || typeof data !== 'object' || (!data.progress && !data.cardProgress && !data.streak)) {
+      if (!data || typeof data !== 'object' || (!data.progress && !data.cardProgress && !data.streak && !data.favorites)) {
         alert('That file doesn\'t look like a valid progress export.');
         return;
       }
@@ -1843,6 +2040,7 @@ document.getElementById('import-progress-file').addEventListener('change', (e) =
         if (data.progress) localStorage.setItem(PROGRESS_KEY, JSON.stringify(data.progress));
         if (data.cardProgress) localStorage.setItem(CARD_PROGRESS_KEY, JSON.stringify(data.cardProgress));
         if (data.streak) localStorage.setItem(STREAK_KEY, JSON.stringify(data.streak));
+        if (data.favorites) localStorage.setItem(FAVORITES_KEY, JSON.stringify(data.favorites));
       } catch (err) {}
       updateHeaderStats();
       renderProgressModal();
@@ -1862,7 +2060,7 @@ document.getElementById('import-progress-file').addEventListener('change', (e) =
 });
 
 document.getElementById('reset-progress-btn').onclick = () => {
-  if (confirm('Clear all your completed-topic progress, review history, streak, and last-studied deck on this device? This cannot be undone.')) {
+  if (confirm('Clear all your completed-topic progress, review history, streak, and last-studied deck on this device? Your starred "My Words" list will not be affected. This cannot be undone.')) {
     try {
       localStorage.removeItem(PROGRESS_KEY);
       localStorage.removeItem(CARD_PROGRESS_KEY);
