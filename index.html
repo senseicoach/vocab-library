@@ -197,10 +197,10 @@
 <!-- ===== HOME VIEW ===== -->
 <div class="main" id="home-view">
   <div id="view-toggle" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
-    <button id="tab-topics" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">📚 Subjects</button>
-    <button id="tab-paths" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🗺️ Learning Paths</button>
-    <button id="tab-review" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">🔁 Review</button>
-    <button id="tab-favorites" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;">⭐ My Words</button>
+    <button id="tab-topics" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;">📚 Subjects</button>
+    <button id="tab-paths" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;">🗺️ Learning Paths</button>
+    <button id="tab-review" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;">🔁 Review</button>
+    <button id="tab-favorites" class="view-tab-btn" style="flex:1 1 45%;background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.55;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;">⭐ My Words</button>
   </div>
   <div id="wotd-card" style="margin-bottom:1rem;"></div>
   <div id="continue-banner" style="margin-bottom:1rem;"></div>
@@ -909,8 +909,8 @@ function showHomeTab(tab) {
   const reviewBtn = document.getElementById('tab-review');
   const favoritesBtn = document.getElementById('tab-favorites');
   const searchWrap = document.querySelector('.search-wrap');
-  const active = 'background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
-  const inactive = 'background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;opacity:.55;';
+  const active = 'background:var(--card-white);color:var(--gold-accent);border:1.5px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;';
+  const inactive = 'background:var(--card-white);color:var(--gold-accent);border:1px solid var(--gold-accent);border-radius:10px;padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;opacity:.55;display:flex;align-items:center;justify-content:flex-start;gap:.5rem;';
 
   topicsBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'topics' ? active : inactive);
   pathsBtn.style.cssText = 'flex:1 1 45%;' + (tab === 'paths' ? active : inactive);
